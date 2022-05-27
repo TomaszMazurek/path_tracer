@@ -6,14 +6,14 @@
 
 double hit_sphere(const point3& center, double radius, const ray& r) {
     vec3 oc = r.origin() - center; // origin center - środek układu współrzędnych
-    auto a = dot(r.direction(), r.direction()); // A we funkcji liniowej długości promienia 
-    auto b = 2.0 * dot(oc, r.direction()); // kierunek padania promienia
-    auto c = dot(oc, oc) - radius*radius; // sfera
-    auto discriminant = b*b -4*a*c; // pierwiastek równania kwadratowego dla przecięcia sfery przez promień
+    auto a = r.direction().length_squared(); // A we funkcji liniowej długości promienia 
+    auto half_b = dot(oc, r.direction()); // kierunek padania promienia
+    auto c = oc.length_squared() - radius*radius; // sfera
+    auto discriminant = half_b*half_b -a*c; // pierwiastek równania kwadratowego dla przecięcia sfery przez promień
     if (discriminant < 0){ //jesli pierwiastek równania przecięcia promienia i sfery jest ujemny
         return -1.0;
     } else {
-        return (-b - sqrt(discriminant)/2.0 * a); // zwracana jest wartosc pierwiastka
+        return (-half_b - sqrt(discriminant))/a; // zwracana jest wartosc pierwiastka
     }
 
 }
