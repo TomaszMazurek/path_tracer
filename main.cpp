@@ -4,20 +4,28 @@
 
 #include <iostream>
 
-bool hit_sphere(const point3& center, double radius, const ray& r) {
+double hit_sphere(const point3& center, double radius, const ray& r) {
     vec3 oc = r.origin() - center; // origin center - środek układu współrzędnych
     auto a = dot(r.direction(), r.direction()); // A we funkcji liniowej długości promienia 
     auto b = 2.0 * dot(oc, r.direction()); // kierunek padania promienia
     auto c = dot(oc, oc) - radius*radius; // sfera
     auto discriminant = b*b -4*a*c; // pierwiastek równania kwadratowego dla przecięcia sfery przez promień
-    return (discriminant > 0); // zwracana jest informacja czy istnieje choć jeden pierwiastek równania przecięcia promienia i sfery
+    if (discriminant < 0){ //jesli pierwiastek równania przecięcia promienia i sfery jest ujemny
+        return -1.0;
+    } else {
+        return (-b - sqrt(discriminant)/2.0 * a); // zwracana jest wartosc pierwiastka
+    }
+
 }
 
 color ray_color(const ray& r) {
-    if (hit_sphere(point3(0,0,-1), 0.5, r)) // w przypadku przecięcia sfery przez promień liczac od obserwatora
-        return color(1,0,0); // piksel przyjmuje kolor czerwony
+    auto t = (hit_sphere(point3(0,0,-1), 0.5, r)); // wartość t dla przecięcia sfery przez promień liczac od obserwatora
+    if (t > 0.0) {
+        vec3 N = unit_vector(r.at(t) - vec3(0,0,-1));
+        return 0.5*color(N.x()+1, N.y()+1, N.z()+1);
+    }
     vec3 unit_direction = unit_vector(r.direction());
-    auto t = 0.5*(unit_direction.y() + 1.0);
+    t = 0.5*(unit_direction.y() + 1.0);
     return  (1.0-t)* color(1.0, 1.0, 1.0) + t*color(0.5, 0.7, 1.0); 
 }
 
