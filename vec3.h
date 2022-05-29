@@ -118,4 +118,12 @@ vec3 random_unit_hit_on_sphere() {
     return unit_vector(random_hit_on_sphere());
 }
 
+vec3 random_unit_hit_on_hemisphere(const vec3& normal) {
+    vec3 in_unit_sphere = random_unit_hit_on_sphere();
+    if (dot(in_unit_sphere, normal) > 0.0) // trafienie w tej samej półsferze co normalna
+        return in_unit_sphere;
+    else
+        return -in_unit_sphere;
+}
+
 #endif

@@ -14,12 +14,12 @@ color ray_color(const ray& r, const object3d& world, int depth) {
         return color(0,0,0);
 
     if (world.hit(r, 0.001, inf, hit)) {
-        point3 target = hit.p + hit.normal + random_unit_hit_on_sphere();
+        point3 target = hit.p + random_unit_hit_on_hemisphere(hit.normal);
         return 0.5 * ray_color(ray(hit.p, target - hit.p), world, depth-1);
     }
     vec3 unit_direction = unit_vector(r.direction());
     auto t = 0.5*(unit_direction.y() + 1.0);
-    return  (1.0-t)* color(1.0, 1.0, 1.0) + t*color(0.5, 0.7, 1.0); 
+    return  (1.0-t) * color(1.0, 1.0, 1.0) + t*color(0.5, 0.7, 1.0);
 }
 
 int main() {
@@ -45,7 +45,7 @@ int main() {
     const clock_t begin_time = clock();
 
     for (int j = image_height -1; j >=0 ; --j){
-        //std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
+        std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
         for (int i = 0; i < image_width ; ++i){
             color pixel_color(0,0,0);
             for (int s = 0; s < samples_per_pixel; ++s){
