@@ -50,4 +50,25 @@ class metal : public material {
         double fuzz;
 };
 
+class dielectric : public material {
+    public:
+        dielectric(double index_of_refraction) : ir(index_of_refraction) {}
+
+       bool scatter(
+            const ray& r_in, const ray_hit_point& hit, color& attenuation, ray& scattered
+        ) const {
+            attenuation = color(1.0, 1.0, 1.0);
+            double refraction_ratio = hit.front_face ? (1.0/ir) : ir;
+
+            vec3 unit_direction = unit_vector(r_in.direction());
+            vec3 refracted = refract(unit_direction, hit.normal, refraction_ratio);
+
+            scattered = ray(hit.p, refracted);
+            return true;
+        }
+
+    public:
+        double ir; // Index of Refraction
+};
+
 #endif
