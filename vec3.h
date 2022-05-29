@@ -45,6 +45,13 @@ class vec3 {
             return e[0]*e[0] + e[1]*e[1] + e[2]*e[2];
         }
 
+        inline static vec3 random() {
+            return vec3(rng(), rng(), rng());
+        }
+
+        inline static vec3 random(double min, double max) {
+            return vec3(rng(min,max), rng(min,max), rng(min,max));
+        }
     public:
         double e[3];
 };
@@ -97,6 +104,14 @@ inline vec3 cross(const vec3 &u, const vec3 &v) {
 
 inline vec3 unit_vector(vec3 v) {
     return v / v.length();
+}
+
+vec3 random_hit_on_sphere() {
+    while (true) {
+        auto p = vec3::random(-1,1);
+        if (p.length_squared() >= 1) continue;
+        return p;
+    }
 }
 
 #endif

@@ -5,9 +5,6 @@
 #include <limits>
 #include <memory>
 #include <cstdlib>
-#include "ray.h"
-#include "vec3.h"
-
 
 using std::shared_ptr;
 using std::make_shared;
@@ -33,7 +30,7 @@ inline double rng() {
 
 inline double rng(double min, double max) {
     //zwraca liczbę rzeczywistą w zakresie [min, max)
-    return min + (min-max)*rng();
+    return min + (max-min)*rng();
 }
 
 inline double clamp(double x, double min, double max) {
@@ -41,4 +38,9 @@ inline double clamp(double x, double min, double max) {
     if (x > max) return max;
     return x;
 }
+
+//wspolne deklaracje include
+#include "ray.h"
+#include "vec3.h"
+
 #endif

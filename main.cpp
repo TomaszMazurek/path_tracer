@@ -6,10 +6,15 @@
 #include "camera.h"
 
 
-color ray_color(const ray& r, const object3d& world) {
+color ray_color(const ray& r, const object3d& world, int depth) {
     ray_hit_point hit;
-    if (world.hit(r, 0.0, inf, hit)) {
-        return 0.5 * (hit.normal + color(1,1,1));
+
+    if (depth <= 0)
+        return color(0,0,0);
+
+    if (world.hit(r, 0, inf, hit)) {
+        point3 target = hit.p + hit.normal + random_hit_on_sphere();
+        return 0.5 * ray_color(ray(hit.p, target - hit.p), world, depth-1);
     }
     vec3 unit_direction = unit_vector(r.direction());
     auto t = 0.5*(unit_direction.y() + 1.0);
@@ -23,6 +28,7 @@ int main() {
     const int image_width = 1024;
     const int image_height = static_cast<int>(image_width/ aspect_ratio);   
     const int samples_per_pixel = 100;
+    const int max_depth = 50;
 
     //World
     object3d_list world;
@@ -43,7 +49,7 @@ int main() {
                 auto u = (i + rng()) / (image_width-1); //współrzędna horyzontalna u
                 auto v = (j + rng()) / (image_height-1); //współrzędna wertykalna v
                 ray r = cam.cast_ray(u, v); // ustawienie kierunku promienia względem (piksela) viewportu
-                pixel_color += ray_color(r, world); //wyznaczenie koloru w punkcie przecięcia promienia z (pikselem) vieportem
+                pixel_color += ray_color(r, world, max_depth); //wyznaczenie koloru w punkcie przecięcia promienia z (pikselem) vieportem
             }
             write_color(std::cout, pixel_color, samples_per_pixel);
         }
