@@ -8,12 +8,13 @@ class sphere: public object3d {
 private:
     public:
         sphere() {}
-        sphere(point3 cp, double r) : center(cp), radius(r) {};
+        sphere(point3 cp, double r, shared_ptr<material> m) : center(cp), radius(r), mat_ptr(m) {};
 
         virtual bool hit(const ray& r, double t_min, double t_max, ray_hit_point& r_hit) const override;
     public:
         point3 center;
         double radius;
+        shared_ptr<material> mat_ptr;
 };
 
 bool sphere::hit(const ray& r, double t_min, double t_max, ray_hit_point& r_hit) const {
@@ -38,6 +39,7 @@ bool sphere::hit(const ray& r, double t_min, double t_max, ray_hit_point& r_hit)
     r_hit.p = r.at(r_hit.t);
     vec3 out_n = (r_hit.p - center) / radius;
     r_hit.set_normal_dir(r, out_n);
+    r_hit.mat_ptr = mat_ptr;
     
     return true;
 };

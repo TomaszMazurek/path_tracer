@@ -5,7 +5,7 @@
 #include "object3d/object3d_list.h"
 #include "sphere/sphere.h"
 #include "camera.h"
-
+#include "material.h"
 
 color ray_color(const ray& r, const object3d& world, int depth) {
     ray_hit_point hit;
@@ -14,8 +14,13 @@ color ray_color(const ray& r, const object3d& world, int depth) {
         return color(0,0,0);
 
     if (world.hit(r, 0.001, inf, hit)) {
-        point3 target = hit.p + random_unit_hit_on_hemisphere(hit.normal);
-        return 0.5 * ray_color(ray(hit.p, target - hit.p), world, depth-1);
+        //point3 target = hit.p + random_unit_hit_on_hemisphere(hit.normal);
+        //return 0.5 * ray_color(ray(hit.p, target - hit.p), world, depth-1);
+        ray scattered;
+        color attenuation;
+        if (hit.mat_ptr->scatter(r, hit, attenuation, scattered))
+            return attenuation * ray_color(scattered, world, depth-1);
+        return color(0,0,0);
     }
     vec3 unit_direction = unit_vector(r.direction());
     auto t = 0.5*(unit_direction.y() + 1.0);
@@ -33,8 +38,15 @@ int main() {
 
     //World
     object3d_list world;
-    world.add(make_shared<sphere>(point3(0,0,-1), 0.5));
-    world.add(make_shared<sphere>(point3(0,-100.5,-1), 100));
+    auto material_ground = make_shared<lambertian>(color(0.8, 0.8, 0.0));
+    auto material_center = make_shared<lambertian>(color(0.7, 0.3, 0.3));
+    auto material_left   = make_shared<metal>(color(0.8, 0.8, 0.8));
+    auto material_right  = make_shared<metal>(color(0.8, 0.6, 0.2));
+
+    world.add(make_shared<sphere>(point3( 0.0, -100.5, -1.0), 100.0, material_ground));
+    world.add(make_shared<sphere>(point3( 0.0,    0.0, -1.0),   0.5, material_center));
+    world.add(make_shared<sphere>(point3(-2.0,    0.0, -2.0),   0.5, material_left));
+    world.add(make_shared<sphere>(point3( 1.0,    0.0, -1.0),   0.5, material_right));
 
     //camera
     camera cam;
