@@ -61,14 +61,31 @@ class dielectric : public material {
             double refraction_ratio = hit.front_face ? (1.0/ir) : ir;
 
             vec3 unit_direction = unit_vector(r_in.direction());
-            vec3 refracted = refract(unit_direction, hit.normal, refraction_ratio);
+            double cos_theta = fmin(dot(-unit_direction, hit.normal), 1.0);
+            double sin_theta = sqrt(1.0 - cos_theta*cos_theta);
 
-            scattered = ray(hit.p, refracted);
+            bool cannot_refract = refraction_ratio * sin_theta > 1.0;
+            vec3 direction;
+
+            if (cannot_refract || reflectance(cos_theta, refraction_ratio) > rng())
+                direction = reflect(unit_direction, hit.normal);
+            else
+                direction = refract(unit_direction, hit.normal, refraction_ratio);
+
+            scattered = ray(hit.p, direction);
             return true;
         }
 
     public:
-        double ir; // Index of Refraction
+        double ir; // współczynnik załamania
+
+    private:
+        static double reflectance(double cosine, double ref_idx) {
+            // Aproksymacja Schlicka dla odbicia.
+            auto r0 = (1-ref_idx) / (1+ref_idx);
+            r0 = r0*r0;
+            return r0 + (1-r0)*pow((1 - cosine),5);
+        }
 };
 
 #endif
