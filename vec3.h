@@ -144,4 +144,11 @@ vec3 refract(const vec3& uv, const vec3& n, double refraction_ratio) {
     return r_out_perp + r_out_parallel;
 }
 
+vec3 random_in_unit_disk() {
+    while (true) {
+        auto p = vec3(rng(-1,1), rng(-1,1), 0);
+        if (p.length_squared() >= 1) continue;
+        return p;
+    }
+}
 #endif
