@@ -114,4 +114,8 @@ vec3 random_hit_on_sphere() {
     }
 }
 
+vec3 random_unit_hit_on_sphere() {
+    return unit_vector(random_hit_on_sphere());
+}
+
 #endif
