@@ -1,4 +1,5 @@
 #include <iostream>
+#include <ctime>
 #include "utils.h"
 #include "color.h"
 #include "object3d/object3d_list.h"
@@ -40,9 +41,11 @@ int main() {
 
     //Render
     std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
+    
+    const clock_t begin_time = clock();
 
     for (int j = image_height -1; j >=0 ; --j){
-        std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
+        //std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
         for (int i = 0; i < image_width ; ++i){
             color pixel_color(0,0,0);
             for (int s = 0; s < samples_per_pixel; ++s){
@@ -54,6 +57,6 @@ int main() {
             write_color(std::cout, pixel_color, samples_per_pixel);
         }
     }
-    
-    std::cerr << "\nDone.\n";
+
+    std::cerr << "\nDone in " << float( clock () - begin_time ) /  CLOCKS_PER_SEC << "s\n";
 }
