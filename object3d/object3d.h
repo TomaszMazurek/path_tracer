@@ -2,6 +2,7 @@
 #define OBJECT3D_H
 
 #include "../utils.h"
+#include "../aabb.h"
 
 class material;
 
@@ -21,5 +22,7 @@ struct ray_hit_point {
 class object3d {
     public:
         virtual bool hit(const ray& r, double t_min, double t_max, ray_hit_point& r_hit) const = 0;
+        virtual bool bounding_box(double time0, double time1, aabb& output_box) const = 0;
+
 };
 #endif  

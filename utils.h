@@ -33,6 +33,11 @@ inline double rng(double min, double max) {
     return min + (max-min)*rng();
 }
 
+inline int random_int(int min, int max) {
+    // Returns a random integer in [min,max].
+    return static_cast<int>(rng(min, max+1));
+}
+
 inline double clamp(double x, double min, double max) {
     if (x < min) return min;
     if (x > max) return max;
