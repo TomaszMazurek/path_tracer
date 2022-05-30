@@ -7,25 +7,44 @@
 #include "camera.h"
 #include "material.h"
 #include "moving_sphere.h"
+#include "aarect.h"
 
-color ray_color(const ray& r, const object3d& world, int depth) {
+color ray_color(const ray& r, const color& background, const object3d& world, int depth) {
     ray_hit_point hit;
 
     if (depth <= 0)
         return color(0,0,0);
 
-    if (world.hit(r, 0.001, inf, hit)) {
-        //point3 target = hit.p + random_unit_hit_on_hemisphere(hit.normal);
-        //return 0.5 * ray_color(ray(hit.p, target - hit.p), world, depth-1);
-        ray scattered;
-        color attenuation;
-        if (hit.mat_ptr->scatter(r, hit, attenuation, scattered))
-            return attenuation * ray_color(scattered, world, depth-1);
-        return color(0,0,0);
-    }
-    vec3 unit_direction = unit_vector(r.direction());
-    auto t = 0.5*(unit_direction.y() + 1.0);
-    return  (1.0-t) * color(1.0, 1.0, 1.0) + t*color(0.5, 0.7, 1.0);
+        // If the ray hits nothing, return the background color.
+    if (!world.hit(r, 0.001, inf, hit))
+        return background;    
+
+    ray scattered;
+    color attenuation;
+    color emitted = hit.mat_ptr->emitted(hit.u, hit.v, hit.p);
+
+    if (!hit.mat_ptr->scatter(r, hit, attenuation, scattered))
+        return emitted;
+
+    return emitted + attenuation * ray_color(scattered, background, world, depth-1);
+}
+
+object3d_list simple_light() {
+    object3d_list objects;
+
+    auto pertext = make_shared<noise_texture>(4);
+    objects.add(make_shared<sphere>(point3(0,-1000,0), 1000, make_shared<lambertian>(pertext)));
+    
+    auto difflight2 = make_shared<diffuse_light>(color(4,4,4));
+    objects.add(make_shared<sphere>(point3(0,6,0), 1, difflight2));
+    
+    
+    objects.add(make_shared<sphere>(point3(0,2,0), 2, make_shared<lambertian>(pertext)));
+
+    auto difflight = make_shared<diffuse_light>(color(4,4,4));
+    objects.add(make_shared<xy_rect>(3, 5, 1, 3, -2, difflight));
+
+    return objects;
 }
 
 object3d_list two_spheres() {
@@ -131,10 +150,13 @@ int main() {
     point3 lookat;
     auto vfov = 40.0;
     auto aperture = 0.0;
+    color background(0,0,0);
+
 
     switch (0) {
         case 1:
             world = random_scene();
+            background = color(0.70, 0.80, 1.00);
             lookfrom = point3(13,2,3);
             lookat = point3(0,0,0);
             vfov = 20.0;
@@ -143,6 +165,7 @@ int main() {
 
         case 2:
             world = two_spheres();
+            background = color(0.70, 0.80, 1.00);
             lookfrom = point3(13,2,3);
             lookat = point3(0,0,0);
             vfov = 20.0;
@@ -150,18 +173,28 @@ int main() {
         
         case 3:
             world = two_perlin_spheres();
+            background = color(0.70, 0.80, 1.00);
             lookfrom = point3(13,2,3);
             lookat = point3(0,0,0);
             vfov = 20.0;
             break;    
 
-        default:
         case 4:
             world = earth();
             lookfrom = point3(13,2,3);
             lookat = point3(0,0,0);
             vfov = 20.0;
             break;
+        
+        default:
+        case 5:
+            world = simple_light();
+            samples_per_pixel = 400;
+            background = color(0,0,0);
+            lookfrom = point3(26,3,6);
+            lookat = point3(0,2,0);
+            vfov = 20.0;
+            break;   
     }
 
     // Camera
@@ -231,7 +264,7 @@ int main() {
                 auto u = (i + rng()) / (image_width-1); //współrzędna horyzontalna u
                 auto v = (j + rng()) / (image_height-1); //współrzędna wertykalna v
                 ray r = cam.cast_ray(u, v); // ustawienie kierunku promienia względem (piksela) viewportu
-                pixel_color += ray_color(r, world, max_depth); //wyznaczenie koloru w punkcie przecięcia promienia z (pikselem) vieportem
+                pixel_color += ray_color(r, background, world, max_depth); //wyznaczenie koloru w punkcie przecięcia promienia z (pikselem) vieportem
             }
             write_color(std::cout, pixel_color, samples_per_pixel);
         }
