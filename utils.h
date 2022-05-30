@@ -24,7 +24,8 @@ inline double degrees_to_radians(double degrees) {
 
 inline double rng() {
     //zwraca liczbę rzeczywistą w zakresie [0,1)
-    return rand() / (RAND_MAX + 1.0);
+    const double r = rand();
+    return (r > 0.0 ? r : rand()) / (RAND_MAX + 1.0);
 }
 
 
