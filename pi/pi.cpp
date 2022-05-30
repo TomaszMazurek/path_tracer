@@ -6,14 +6,21 @@
 #include <stdlib.h>
 
 int main() {
-    int N = 1000;
     int inside_circle = 0;
-    for (int i = 0; i < N; i++) {
+    int runs = 0;
+    std::cout << std::fixed << std::setprecision(12);
+    const clock_t begin_time = clock();
+    while (true) {
+        runs++;
         auto x = rng(-1,1);
         auto y = rng(-1,1);
         if (x*x + y*y < 1)
             inside_circle++;
+
+        if (runs % 100000 == 0)
+            std::cout << "Estimate of Pi = "
+                      << 4*double(inside_circle) / runs
+                      << " - " << float( clock () - begin_time ) /  CLOCKS_PER_SEC
+                      << '\n';
     }
-    std::cout << std::fixed << std::setprecision(12);
-    std::cout << "Estimate of Pi = " << 4*double(inside_circle) / N << '\n';
 }
