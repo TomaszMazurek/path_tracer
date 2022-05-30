@@ -2,6 +2,7 @@
 #define MATERIAL_H
 
 #include "utils.h"
+#include "texture.h"
 
 struct ray_hit_point;
 
@@ -12,7 +13,8 @@ class material {
 
 class lambertian : public material {
     public:
-        lambertian(const color& a) : albedo(a) {}
+        lambertian(const color& a) : albedo(make_shared<solid_color>(a)) {}
+        lambertian(shared_ptr<texture> a) : albedo(a) {}
 
         bool scatter(
             const ray& r_in, const ray_hit_point& hit, color& attenuation, ray& scattered
@@ -24,12 +26,13 @@ class lambertian : public material {
                 scatter_direction = hit.normal;
 
             scattered = ray(hit.p, scatter_direction, r_in.time());
-            attenuation = albedo;
+            attenuation = albedo->value(hit.u, hit.v, hit.p);
             return true;
         }
 
     public:
-        color albedo;
+    shared_ptr<texture> albedo;
+
 };
 
 class metal : public material {

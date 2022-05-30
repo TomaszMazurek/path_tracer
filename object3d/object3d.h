@@ -11,6 +11,8 @@ struct ray_hit_point {
     vec3 normal;
     shared_ptr<material> mat_ptr;
     double t;
+    double u;
+    double v;
     bool front_face;
 
     inline void set_normal_dir(const ray& r, const vec3& out_n) {
