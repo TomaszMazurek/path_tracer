@@ -23,7 +23,7 @@ class lambertian : public material {
             if (scatter_direction.near_zero())
                 scatter_direction = hit.normal;
 
-            scattered = ray(hit.p, scatter_direction);
+            scattered = ray(hit.p, scatter_direction, r_in.time());
             attenuation = albedo;
             return true;
         }
@@ -40,7 +40,7 @@ class metal : public material {
             const ray& r_in, const ray_hit_point& hit, color& attenuation, ray& scattered
         ) const {
             vec3 reflected = reflect(unit_vector(r_in.direction()), hit.normal);
-            scattered = ray(hit.p, reflected + fuzz*random_unit_hit_on_sphere());
+            scattered = ray(hit.p, reflected + fuzz*random_unit_hit_on_sphere(), r_in.time());
             attenuation = albedo;
             return (dot(scattered.direction(), hit.normal) > 0);
         }
@@ -72,7 +72,7 @@ class dielectric : public material {
             else
                 direction = refract(unit_direction, hit.normal, refraction_ratio);
 
-            scattered = ray(hit.p, direction);
+            scattered = ray(hit.p, direction, r_in.time());
             return true;
         }
 
