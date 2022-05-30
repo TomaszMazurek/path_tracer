@@ -113,4 +113,21 @@ class diffuse_light : public material  {
         shared_ptr<texture> emit;
 };
 
+class isotropic : public material {
+    public:
+        isotropic(color c) : albedo(make_shared<solid_color>(c)) {}
+        isotropic(shared_ptr<texture> a) : albedo(a) {}
+
+        virtual bool scatter(
+            const ray& r_in, const ray_hit_point& hit, color& attenuation, ray& scattered
+        ) const override {
+            scattered = ray(hit.p, random_unit_hit_on_sphere(), r_in.time());
+            attenuation = albedo->value(hit.u, hit.v, hit.p);
+            return true;
+        }
+
+    public:
+        shared_ptr<texture> albedo;
+};
+
 #endif
