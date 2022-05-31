@@ -25,7 +25,7 @@ color ray_color(const ray& r, const color& background, const object3d& world, in
 
     ray scattered;
     color attenuation;
-    color emitted = hit.mat_ptr->emitted(hit.u, hit.v, hit.p);
+    color emitted = hit.mat_ptr->emitted(r, hit, hit.u, hit.v, hit.p);
     double pdf;
     color albedo;
     if (!hit.mat_ptr->scatter(r, hit, albedo, scattered, pdf))
@@ -78,7 +78,7 @@ object3d_list cornell_box() {
     auto light = make_shared<diffuse_light>(color(15, 15, 15));
 
     //light
-    objects.add(make_shared<xz_rect>(213, 343, 227, 332, 554, light));
+    objects.add(make_shared<flip_face>(make_shared<xz_rect>(213, 343, 227, 332, 554, light)));
 
     //walls
     objects.add(make_shared<yz_rect>(0, 555, 0, 555, 555, green));

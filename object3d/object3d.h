@@ -147,4 +147,26 @@ bool rotate_y::hit(const ray& r, double t_min, double t_max, ray_hit_point& hit)
     return true;
 }
 
+class flip_face : public object3d {
+    public:
+        flip_face(shared_ptr<object3d> p) : ptr(p) {}
+
+        virtual bool hit(
+            const ray& r, double t_min, double t_max, ray_hit_point& hit) const override {
+
+            if (!ptr->hit(r, t_min, t_max, hit))
+                return false;
+
+            hit.front_face = !hit.front_face;
+            return true;
+        }
+
+        virtual bool bounding_box(double time0, double time1, aabb& output_box) const override {
+            return ptr->bounding_box(time0, time1, output_box);
+        }
+
+    public:
+        shared_ptr<object3d> ptr;
+};
+
 #endif  

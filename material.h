@@ -10,7 +10,7 @@ struct ray_hit_point;
 
 class material {
     public:
-        virtual color emitted(double u, double v, const point3& p) const {
+        virtual color emitted(const ray& r_in, const ray_hit_point& hit, double u, double v, const point3& p) const {
             return color(0,0,0);
         }
         virtual bool scatter(const ray& r_in, const ray_hit_point& hit, color& attenuation, ray& scattered, double& pdf
@@ -121,8 +121,10 @@ class diffuse_light : public material  {
             return false;
         }
 
-        virtual color emitted(double u, double v, const point3& p) const override {
-            return emit->value(u, v, p);
+        virtual color emitted(const ray& r_in, const ray_hit_point& hit, double u, double v, const point3& p) const override {
+            if (!hit.front_face)
+                return color(0,0,0);
+            return emit->value(u, v, p);   
         }
 
     public:
