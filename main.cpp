@@ -11,6 +11,7 @@
 #include "box.h"
 #include "constant_medium.h"
 #include "object3d/bvh.h"
+#include "pdf.h"
 
 color ray_color(const ray& r, const color& background, const object3d& world, int depth) {
     ray_hit_point hit;
@@ -30,21 +31,10 @@ color ray_color(const ray& r, const color& background, const object3d& world, in
     color albedo;
     if (!hit.mat_ptr->scatter(r, hit, albedo, scattered, pdf))
         return emitted;
-    auto on_light = point3(rng(213,343), 554, rng(227,332));
-    auto to_light = on_light - hit.p;
-    auto distance_squared = to_light.length_squared();
-    to_light = unit_vector(to_light);
 
-    if (dot(to_light, hit.normal) < 0)
-        return emitted;
-
-    double light_area = (343-213)*(332-227);
-    auto light_cosine = fabs(to_light.y());
-    if (light_cosine < 0.000001)
-        return emitted;
-
-    pdf = distance_squared / (light_cosine * light_area);
-    scattered = ray(hit.p, to_light, r.time());
+    cosine_pdf p(hit.normal);
+    scattered = ray(hit.p, p.generate(), r.time());
+    pdf = p.value(scattered.direction());
 
     return emitted
          + albedo * hit.mat_ptr->scattering_pdf(r, hit, scattered)

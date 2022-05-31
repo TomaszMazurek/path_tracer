@@ -5,17 +5,17 @@
 #include <math.h>
 #include <stdlib.h>
 
-inline vec3 random_cosine_direction() {
-    auto r1 = rng();
-    auto r2 = rng();
-    auto z = sqrt(1-r2);
+//inline vec3 random_cosine_direction() {
+//    auto r1 = rng();
+//    auto r2 = rng();
+//    auto z = sqrt(1-r2);
 
-    auto phi = 2*pi*r1;
-    auto x = cos(phi)*sqrt(r2);
-    auto y = sin(phi)*sqrt(r2);
+//    auto phi = 2*pi*r1;
+//    auto x = cos(phi)*sqrt(r2);
+//    auto y = sin(phi)*sqrt(r2);
 
-    return vec3(x, y, z);
-}
+//    return vec3(x, y, z);
+//}
 
 //int main() {
 //    int N = 1000000;

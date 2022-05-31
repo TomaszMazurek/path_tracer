@@ -4,7 +4,7 @@
 #include "utils.h"
 #include "texture.h"
 #include "onb.h"
-#include "math_samples/cos_density.h"
+#include "pdf.h"
 
 struct ray_hit_point;
 
