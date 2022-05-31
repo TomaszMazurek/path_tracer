@@ -13,7 +13,7 @@ int main() {
     int N = 1000000;
     auto sum = 0.0;
     for (int i = 0; i < N; i++) {
-        vec3 d = random_unit_hit_on_sphere();
+        vec3 d = random_hit_on_sphere();
         auto cosine_squared = d.z()*d.z();
         sum += cosine_squared / pdf(d);
     }

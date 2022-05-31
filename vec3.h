@@ -5,6 +5,7 @@
 #include <iostream>
 
 using std::sqrt;
+using std::fabs;
 
 class vec3 {
     public:
@@ -126,7 +127,7 @@ vec3 random_unit_hit_on_sphere() {
 }
 
 vec3 random_unit_hit_on_hemisphere(const vec3& normal) {
-    vec3 in_unit_sphere = random_unit_hit_on_sphere();
+    vec3 in_unit_sphere = random_hit_on_sphere();
     if (dot(in_unit_sphere, normal) > 0.0) // trafienie w tej samej półsferze co normalna
         return in_unit_sphere;
     else

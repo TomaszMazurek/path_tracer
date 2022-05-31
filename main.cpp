@@ -21,26 +21,31 @@ color ray_color(const ray& r, const color& background, const object3d& world, sh
         return color(0,0,0);
 
     // If the ray hits nothing, return the background color.
-    if (!world.hit(r, 0.001, inf, hit))
+    if (!world.hit(r, 0.001, inf, hit)){
+    //std::cerr << "\rray color hits nothing: " << std::flush;
         return background;
+    }
 
-    ray scattered;
-    color attenuation;
+    scatter_record srec;
     color emitted = hit.mat_ptr->emitted(r, hit, hit.u, hit.v, hit.p);
-    double pdf;
-    color albedo;
-    if (!hit.mat_ptr->scatter(r, hit, albedo, scattered, pdf))
+
+    if (!hit.mat_ptr->scatter(r, hit, srec)) {
+        //std::cerr << "\rray color hits material emitter: " << std::flush;
         return emitted;
+    }
 
-    auto p0 = make_shared<object3d_pdf>(lights, hit.p);
-    auto p1 = make_shared<cosine_pdf>(hit.normal);
-    mixture_pdf mixed_pdf(p0, p1);
+    if (srec.is_specular) {
+        return srec.attenuation
+             * ray_color(srec.specular_ray, background, world, lights, depth-1);
+    }
 
-    scattered = ray(hit.p, mixed_pdf.generate(), r.time());
-    pdf = mixed_pdf.value(scattered.direction());
-
+    auto light_ptr =make_shared<object3d_pdf>(lights, hit.p);
+    mixture_pdf mixed_pdf(light_ptr, srec.pdf_ptr);
+    ray scattered = ray(hit.p, mixed_pdf.generate(), r.time());
+    auto pdf = mixed_pdf.value(scattered.direction());
+    //std::cerr << "\rray color hits material diffuse: " << std::flush;
     return emitted
-         + albedo * hit.mat_ptr->scattering_pdf(r, hit, scattered)
+         + srec.attenuation * hit.mat_ptr->scattering_pdf(r, hit, scattered)
                   * ray_color(scattered, background, world, lights, depth-1) / pdf;
 }
 
@@ -81,16 +86,19 @@ object3d_list cornell_box() {
     objects.add(make_shared<xy_rect>(0, 555, 0, 555, 555, white));
 
     //boxes
-    shared_ptr<object3d> box1 = make_shared<box>(point3(0, 0, 0), point3(165, 330, 165), white);
+    shared_ptr<material> aluminum = make_shared<metal>(color(0.8, 0.85, 0.88), 0.0);
+    shared_ptr<object3d> box1 = make_shared<box>(point3(0,0,0), point3(165,330,165), aluminum);
     box1 = make_shared<rotate_y>(box1, 15);
     box1 = make_shared<translate>(box1, vec3(265,0,295));
     objects.add(box1);
+
+    //auto glass = make_shared<dielectric>(1.5);
+    //objects.add(make_shared<sphere>(point3(190,90,190), 90 , glass));
 
     shared_ptr<object3d> box2 = make_shared<box>(point3(0,0,0), point3(165,165,165), white);
     box2 = make_shared<rotate_y>(box2, -18);
     box2 = make_shared<translate>(box2, vec3(130,0,65));
     objects.add(box2);
-
     return objects;
 }
 
