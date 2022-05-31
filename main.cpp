@@ -13,7 +13,7 @@
 #include "object3d/bvh.h"
 #include "pdf.h"
 
-color ray_color(const ray& r, const color& background, const object3d& world, shared_ptr<object3d>& lights, int depth) {
+color ray_color(const ray& r, const color& background, const object3d& world, shared_ptr<object3d_list> lights, int depth) {
     ray_hit_point hit;
 
     // If we've exceeded the ray bounce limit, no more light is gathered.
@@ -93,8 +93,6 @@ int main() {
     int samples_per_pixel = 100;
     const int max_depth = 50;
 
-
-
     point3 lookfrom = point3(278, 278, -800);
     point3 lookat = point3(278, 278, 0);
     auto vfov = 40.0;
@@ -104,7 +102,12 @@ int main() {
     //World
     object3d_list world = cornell_box();
 //    shared_ptr<object3d> lights = make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>());
-    shared_ptr<object3d> lights = make_shared<sphere>(point3(190, 90, 190), 90, shared_ptr<material>());
+    //shared_ptr<object3d> lights = make_shared<sphere>(point3(190, 90, 190), 90, shared_ptr<material>());
+
+    auto lights = make_shared<object3d_list>();
+    lights->add(make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>()));
+    lights->add(make_shared<sphere>(point3(190, 90, 190), 90, shared_ptr<material>()));
+    
     // Camera
     vec3 vup(0,1,0);
     auto dist_to_focus = 10.0;
