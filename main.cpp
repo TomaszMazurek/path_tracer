@@ -15,25 +15,40 @@
 color ray_color(const ray& r, const color& background, const object3d& world, int depth) {
     ray_hit_point hit;
 
+    // If we've exceeded the ray bounce limit, no more light is gathered.
     if (depth <= 0)
         return color(0,0,0);
 
-        // If the ray hits nothing, return the background color.
+    // If the ray hits nothing, return the background color.
     if (!world.hit(r, 0.001, inf, hit))
-        return background;    
+        return background;
 
     ray scattered;
     color attenuation;
     color emitted = hit.mat_ptr->emitted(hit.u, hit.v, hit.p);
     double pdf;
     color albedo;
-
     if (!hit.mat_ptr->scatter(r, hit, albedo, scattered, pdf))
         return emitted;
+    auto on_light = point3(rng(213,343), 554, rng(227,332));
+    auto to_light = on_light - hit.p;
+    auto distance_squared = to_light.length_squared();
+    to_light = unit_vector(to_light);
 
-    return emitted + albedo *  
-    hit.mat_ptr->scattering_pdf(r, hit, scattered)* 
-    ray_color(scattered, background, world, depth-1) / pdf;
+    if (dot(to_light, hit.normal) < 0)
+        return emitted;
+
+    double light_area = (343-213)*(332-227);
+    auto light_cosine = fabs(to_light.y());
+    if (light_cosine < 0.000001)
+        return emitted;
+
+    pdf = distance_squared / (light_cosine * light_area);
+    scattered = ray(hit.p, to_light, r.time());
+
+    return emitted
+         + albedo * hit.mat_ptr->scattering_pdf(r, hit, scattered)
+                  * ray_color(scattered, background, world, depth-1) / pdf;
 }
 
 object3d_list simple_light() {

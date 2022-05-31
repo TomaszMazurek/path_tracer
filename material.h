@@ -3,6 +3,8 @@
 
 #include "utils.h"
 #include "texture.h"
+#include "onb.h"
+#include "math_samples/cos_density.h"
 
 struct ray_hit_point;
 
@@ -29,17 +31,15 @@ class lambertian : public material {
         lambertian(shared_ptr<texture> a) : albedo(a) {}
 
         bool scatter(
-            const ray& r_in, const ray_hit_point& hit, color& attenuation, ray& scattered, double& pdf
+            const ray& r_in, const ray_hit_point& hit, color& alb, ray& scattered, double& pdf
         ) const {
-            auto scatter_direction = hit.normal + random_unit_hit_on_sphere();
+            onb uvw;
+            uvw.build_from_w(hit.normal);
+            auto direction = uvw.local(random_cosine_direction());
 
-            // Wyłapuje  zdegenerowane kierunki odbicia
-            if (scatter_direction.near_zero())
-                scatter_direction = hit.normal;
-
-            scattered = ray(hit.p, scatter_direction, r_in.time());
-            attenuation = albedo->value(hit.u, hit.v, hit.p);
-            pdf = dot(hit.normal, scattered.direction()) / pi;
+            scattered = ray(hit.p, unit_vector(direction), r_in.time());
+            alb = albedo->value(hit.u, hit.v, hit.p);
+            pdf = dot(uvw.w(), scattered.direction()) / pi;
             return true;
         }
         double scattering_pdf(

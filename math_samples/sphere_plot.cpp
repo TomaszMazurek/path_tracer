@@ -5,7 +5,7 @@
 #include "../utils.h"
 
 int main() {
-    for (int i = 0; i < 200; i++) {
+    for (int i = 0; i < 1000; i++) {
         auto r1 = rng();
         auto r2 = rng();
         auto x = cos(2*pi*r1)*2*sqrt(r2*(1-r2));
