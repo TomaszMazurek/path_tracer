@@ -32,9 +32,12 @@ color ray_color(const ray& r, const color& background, const object3d& world, sh
     if (!hit.mat_ptr->scatter(r, hit, albedo, scattered, pdf))
         return emitted;
 
-    object3d_pdf light_pdf(lights, hit.p);
-    scattered = ray(hit.p, light_pdf.generate(), r.time());
-    pdf = light_pdf.value(scattered.direction());
+    auto p0 = make_shared<object3d_pdf>(lights, hit.p);
+    auto p1 = make_shared<cosine_pdf>(hit.normal);
+    mixture_pdf mixed_pdf(p0, p1);
+
+    scattered = ray(hit.p, mixed_pdf.generate(), r.time());
+    pdf = mixed_pdf.value(scattered.direction());
 
     return emitted
          + albedo * hit.mat_ptr->scattering_pdf(r, hit, scattered)
@@ -275,7 +278,7 @@ int main() {
     auto aspect_ratio = 1.0 / 1.0;
     int image_width = 600;
     int image_height = static_cast<int>(image_width / aspect_ratio);
-    int samples_per_pixel = 10;
+    int samples_per_pixel = 1000;
     const int max_depth = 50;
 
     //const int image_height = static_cast<int>(image_width/ aspect_ratio);   

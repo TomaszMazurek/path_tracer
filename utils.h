@@ -5,6 +5,7 @@
 #include <limits>
 #include <memory>
 #include <cstdlib>
+#include <random>
 
 using std::shared_ptr;
 using std::make_shared;
@@ -28,6 +29,13 @@ inline double rng() {
     return (r > 0.0 ? r : rand()) / (RAND_MAX + 1.0);
 }
 
+
+inline double rng_rand() {
+    //zwraca liczbę rzeczywistą w zakresie [0,1)
+    static std::uniform_real_distribution<double> distribution(0.0, 1.0);
+    static std::mt19937 generator;
+    return distribution(generator);
+}
 
 inline double rng(double min, double max) {
     //zwraca liczbę rzeczywistą w zakresie [min, max)

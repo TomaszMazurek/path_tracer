@@ -58,4 +58,25 @@ class object3d_pdf : public pdf {
         shared_ptr<object3d> ptr;
 };
 
+class mixture_pdf : public pdf {
+    public:
+        mixture_pdf(shared_ptr<pdf> p0, shared_ptr<pdf> p1) {
+            p[0] = p0;
+            p[1] = p1;
+        }
+
+        virtual double value(const vec3& direction) const override {
+            return 0.5 * p[0]->value(direction) + 0.5 *p[1]->value(direction);
+        }
+
+        virtual vec3 generate() const override {
+            if (rng() < 0.5)
+                return p[0]->generate();
+            else
+                return p[1]->generate();
+        }
+
+    public:
+        shared_ptr<pdf> p[2];
+};
 #endif
