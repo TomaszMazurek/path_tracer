@@ -25,11 +25,15 @@ color ray_color(const ray& r, const color& background, const object3d& world, in
     ray scattered;
     color attenuation;
     color emitted = hit.mat_ptr->emitted(hit.u, hit.v, hit.p);
+    double pdf;
+    color albedo;
 
-    if (!hit.mat_ptr->scatter(r, hit, attenuation, scattered))
+    if (!hit.mat_ptr->scatter(r, hit, albedo, scattered, pdf))
         return emitted;
 
-    return emitted + attenuation * ray_color(scattered, background, world, depth-1);
+    return emitted + albedo *  
+    hit.mat_ptr->scattering_pdf(r, hit, scattered)* 
+    ray_color(scattered, background, world, depth-1) / pdf;
 }
 
 object3d_list simple_light() {
@@ -263,14 +267,16 @@ int main() {
     //const int image_width = 1200;
     //const int samples_per_pixel = 500;
     
-    auto aspect_ratio = 16.0 / 9.0;
-    int image_width = 400;
+    //auto aspect_ratio = 16.0 / 9.0;
+    auto aspect_ratio = 1.0 / 1.0;
+    int image_width = 600;
+    int image_height = static_cast<int>(image_width / aspect_ratio);
     int samples_per_pixel = 100;
+    const int max_depth = 50;
 
     //const int image_height = static_cast<int>(image_width/ aspect_ratio);   
     //int image_height = static_cast<int>(image_width / aspect_ratio);
 
-    const int max_depth = 50;
 
     object3d_list world;
 
@@ -281,7 +287,7 @@ int main() {
     color background(0,0,0);
 
 
-    switch (0) {
+    switch (8) {
         case 1:
             world = random_scene();
             background = color(0.70, 0.80, 1.00);
@@ -344,8 +350,19 @@ int main() {
             vfov = 40.0;
             break;
 
-        default:
         case 8:
+            world = cornell_box();
+            aspect_ratio = 1.0;
+            image_width = 600;
+            samples_per_pixel = 100;
+            background = color(0,0,0);
+            lookfrom = point3(278, 278, -800);
+            lookat = point3(278, 278, 0);
+            vfov = 40.0;
+            break; 
+
+        default:
+        case 9:
             world = final_scene();
             aspect_ratio = 1.0;
             image_width = 800;
@@ -362,7 +379,6 @@ int main() {
 
     vec3 vup(0,1,0);
     auto dist_to_focus = 10.0;
-    int image_height = static_cast<int>(image_width / aspect_ratio);
 
     camera cam(lookfrom, lookat, vup, vfov, aspect_ratio, aperture, dist_to_focus, 0.0, 1.0);
 

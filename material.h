@@ -11,7 +11,16 @@ class material {
         virtual color emitted(double u, double v, const point3& p) const {
             return color(0,0,0);
         }
-        virtual bool scatter(const ray& r_in, const ray_hit_point& hit, color& attenuation, ray& scattered) const = 0;
+        virtual bool scatter(const ray& r_in, const ray_hit_point& hit, color& attenuation, ray& scattered, double& pdf
+        ) const {
+            return false;
+        };
+        
+        virtual double scattering_pdf(
+            const ray& r_in, const ray_hit_point& hit, const ray& scattered
+        ) const {
+            return 0;
+        }
 };
 
 class lambertian : public material {
@@ -20,7 +29,7 @@ class lambertian : public material {
         lambertian(shared_ptr<texture> a) : albedo(a) {}
 
         bool scatter(
-            const ray& r_in, const ray_hit_point& hit, color& attenuation, ray& scattered
+            const ray& r_in, const ray_hit_point& hit, color& attenuation, ray& scattered, double& pdf
         ) const {
             auto scatter_direction = hit.normal + random_unit_hit_on_sphere();
 
@@ -30,7 +39,14 @@ class lambertian : public material {
 
             scattered = ray(hit.p, scatter_direction, r_in.time());
             attenuation = albedo->value(hit.u, hit.v, hit.p);
+            pdf = dot(hit.normal, scattered.direction()) / pi;
             return true;
+        }
+        double scattering_pdf(
+            const ray& r_in, const ray_hit_point& hit, const ray& scattered
+        ) const {
+            auto cosine = dot(hit.normal, unit_vector(scattered.direction()));
+            return cosine < 0 ? 0 : cosine/pi;
         }
 
     public:
@@ -100,7 +116,7 @@ class diffuse_light : public material  {
         diffuse_light(color c) : emit(make_shared<solid_color>(c)) {}
 
         virtual bool scatter(
-            const ray& r_in, const ray_hit_point& hit, color& attenuation, ray& scattered
+            const ray& r_in, const ray_hit_point& hit, color& attenuation, ray& scattered, double& pdf
         ) const override {
             return false;
         }
@@ -119,7 +135,7 @@ class isotropic : public material {
         isotropic(shared_ptr<texture> a) : albedo(a) {}
 
         virtual bool scatter(
-            const ray& r_in, const ray_hit_point& hit, color& attenuation, ray& scattered
+            const ray& r_in, const ray_hit_point& hit, color& attenuation, ray& scattered, double& pdf
         ) const override {
             scattered = ray(hit.p, random_unit_hit_on_sphere(), r_in.time());
             attenuation = albedo->value(hit.u, hit.v, hit.p);
