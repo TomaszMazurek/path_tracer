@@ -13,7 +13,7 @@
 #include "object3d/bvh.h"
 #include "pdf.h"
 
-color ray_color(const ray& r, const color& background, const object3d& world, int depth) {
+color ray_color(const ray& r, const color& background, const object3d& world, shared_ptr<object3d>& lights, int depth) {
     ray_hit_point hit;
 
     // If we've exceeded the ray bounce limit, no more light is gathered.
@@ -32,13 +32,13 @@ color ray_color(const ray& r, const color& background, const object3d& world, in
     if (!hit.mat_ptr->scatter(r, hit, albedo, scattered, pdf))
         return emitted;
 
-    cosine_pdf p(hit.normal);
-    scattered = ray(hit.p, p.generate(), r.time());
-    pdf = p.value(scattered.direction());
+    object3d_pdf light_pdf(lights, hit.p);
+    scattered = ray(hit.p, light_pdf.generate(), r.time());
+    pdf = light_pdf.value(scattered.direction());
 
     return emitted
          + albedo * hit.mat_ptr->scattering_pdf(r, hit, scattered)
-                  * ray_color(scattered, background, world, depth-1) / pdf;
+                  * ray_color(scattered, background, world, lights, depth-1) / pdf;
 }
 
 object3d_list simple_light() {
@@ -151,8 +151,7 @@ object3d_list earth() {
 }
 
 object3d_list random_scene() {
-    object3d_list world;
-
+object3d_list world;
     //auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
     //world.add(make_shared<sphere>(point3(0,-1000,0), 1000, ground_material));
 
@@ -276,7 +275,7 @@ int main() {
     auto aspect_ratio = 1.0 / 1.0;
     int image_width = 600;
     int image_height = static_cast<int>(image_width / aspect_ratio);
-    int samples_per_pixel = 100;
+    int samples_per_pixel = 10;
     const int max_depth = 50;
 
     //const int image_height = static_cast<int>(image_width/ aspect_ratio);   
@@ -284,6 +283,7 @@ int main() {
 
 
     object3d_list world;
+    shared_ptr<object3d> lights = make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>());
 
     point3 lookfrom;
     point3 lookat;
@@ -446,7 +446,7 @@ int main() {
                 auto u = (i + rng()) / (image_width-1); //współrzędna horyzontalna u
                 auto v = (j + rng()) / (image_height-1); //współrzędna wertykalna v
                 ray r = cam.cast_ray(u, v); // ustawienie kierunku promienia względem (piksela) viewportu
-                pixel_color += ray_color(r, background, world, max_depth); //wyznaczenie koloru w punkcie przecięcia promienia z (pikselem) vieportem
+                pixel_color += ray_color(r, background, world, lights, max_depth); //wyznaczenie koloru w punkcie przecięcia promienia z (pikselem) vieportem
             }
             write_color(std::cout, pixel_color, samples_per_pixel);
         }

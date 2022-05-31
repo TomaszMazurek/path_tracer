@@ -44,6 +44,23 @@ class xz_rect : public object3d {
             return true;
         }
 
+        virtual double pdf_value(const point3& origin, const vec3& v) const override {
+            ray_hit_point hit;
+            if (!this->hit(ray(origin, v), 0.001, inf, hit))
+                return 0;
+
+            auto area = (x1-x0)*(z1-z0);
+            auto distance_squared = hit.t * hit.t * v.length_squared();
+            auto cosine = fabs(dot(v, hit.normal) / v.length());
+
+            return distance_squared / (cosine * area);
+        }
+
+        virtual vec3 random(const point3& origin) const override {
+            auto random_point = point3(rng(x0,x1), k, rng(z0,z1));
+            return random_point - origin;
+        }
+
     public:
         shared_ptr<material> mp;
         double x0, x1, z0, z1, k;

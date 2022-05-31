@@ -41,4 +41,21 @@ class cosine_pdf : public pdf {
         onb uvw;
 };
 
+class object3d_pdf : public pdf {
+    public:
+        object3d_pdf(shared_ptr<object3d> p, const point3& origin) : ptr(p), o(origin) {}
+
+        virtual double value(const vec3& direction) const override {
+            return ptr->pdf_value(o, direction);
+        }
+
+        virtual vec3 generate() const override {
+            return ptr->random(o);
+        }
+
+    public:
+        point3 o;
+        shared_ptr<object3d> ptr;
+};
+
 #endif
