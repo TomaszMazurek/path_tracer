@@ -10,6 +10,11 @@ void write_color(std::ostream &out, color pixel_color, int samples_pp) {
     auto g = pixel_color.y();
     auto b = pixel_color.z();
 
+    //wartości NaN sa zamieniane na 0
+    if (r != r) r = 0.0;
+    if (g != g) g = 0.0;
+    if (b != b) b = 0.0;
+
     //podzielenie wartości koloru przez liczbę próbek na piksel wraz z korekcją gamma koloru dla gamma=2.0.
     auto scale = 1.0 / samples_pp;
     r = sqrt(scale * r);
